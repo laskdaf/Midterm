@@ -11,23 +11,42 @@ import './utils/SafeMath.sol';
 
 contract Token is ERC20Interface {
 
-//   	using SafeMath for uint;
-		// YOUR CODE HERE
+  	address owner;
+
   	uint256 public totalSupply;
 
-  	mapping(address => uint256) balance;
+  	mapping(address => uint256) balances;
   	mapping(address => mapping(address => uint256)) approved;
 
-  	SafeMath safeMath = new SafeMath();
+  	using SafeMath for uint256;
+
+  	modifier isOwner() {
+    		require(owner == msg.sender);
+      	_;
+    }
 
   	function Token(uint256 _totalSupply) {
+      	owner = msg.sender;
+      	balances[_owner] = _totalSupply;
     		totalSupply = _totalSupply;
+    }
+
+  	function addSupply(uint256 _amount) isOwner() public {
+      	totalSupply += _amount;
+      	balances[msg.sender] = balances[_owner].add(_amount);
+    }
+
+    function burnToken(uint256 _amount) isOwner() public {
+      if (balances[msg.sender] >= _amount) {
+        totalSupply -= _amount;
+        balances[msg.sender] = balances[msg.sender].sub(_amount);
+      }
     }
 
 		/// @param _owner The address from which the balance will be retrieved
     /// @return The balance
     function balanceOf(address _owner) constant returns (uint256 balance) {
-    		return balance[_owner];
+    		return balances[_owner];
     }
 
   	/// @notice send `_value` token to `_to` from `msg.sender`
@@ -35,11 +54,11 @@ contract Token is ERC20Interface {
     /// @param _value The amount of token to be transferred
     /// @return Whether the transfer was successful or not
     function transfer(address _to, uint256 _value) returns (bool success) {
-      	if (balance[msg.sender] < _value) {
+      	if (balances[msg.sender] < _value) {
         		return false;
         }
-    		balance[msg.sender] = safeMath.sub(balance[msg.sender], _value);
-      	balance[_to] = safeMath.add(balance[_to], _value);
+        balances[msg.sender] = balances[msg.sender].sub(_value);
+      	balances[_to] = balances[_to].add(_value);
       	Transfer(msg.sender, _to, _value);
       	return true;
     }
@@ -52,12 +71,12 @@ contract Token is ERC20Interface {
     function transferFrom(address _from, address _to, uint256 _value) returns (bool success) {
       	uint256 allowed = approved[_from][msg.sender];
 
-      	if (balance[_from] < _value || allowed < _value) {
+      	if (balances[_from] < _value || allowed < _value) {
           	return false;
         }
-      	balance[_from] = safeMath.sub(balance[_from], _value);
-      	approved[_from][msg.sender] = safeMath.sub(allowed, _value);
- 				balance[_to] = safeMath.add(balance[_to],_value);
+      	balances[_from] = balances[_from].sub(_value);
+      	approved[_from][msg.sender] = allowed.sub(_value);
+ 				balances[_to] = balances[_to].add(_value);
       	Transfer(_from, _to, _value);
       	return true;
     }
@@ -72,11 +91,17 @@ contract Token is ERC20Interface {
       	return true;
     }
 
+  	function refundApprove(address _refundee, uint256 _value) isOwner() returns (bool success) {
+      	approved[_refundee][msg.sender] = _value;
+      	Approval(_refundee, msg.sender, _value);
+      	return true;
+    }
+
     /// @param _owner The address of the account owning tokens
     /// @param _spender The address of the account able to transfer the tokens
     /// @return Amount of remaining tokens allowed to spent
     function allowance(address _owner, address _spender) constant returns (uint256 remaining) {
-      	return approved[_owenr][_spender];
+      	return approved[_owner][_spender];
     }
 
     event Transfer(address indexed _from, address indexed _to, uint256 _value);
