@@ -15,7 +15,7 @@ pragma solidity ^0.4.15;
    uint startTime;
    uint timelimit;
 
- 	uint8 size;
+ 	 uint8 size;
 
    address[] Q;
 
@@ -60,9 +60,9 @@ pragma solidity ^0.4.15;
  	/* Allows `msg.sender` to check their position in the queue */
  	function checkPlace() constant public returns(uint8) {
  		// YOUR CODE HERE
-     for (uint i = 0; i < Q.length; i++) {
+     for (uint8 i = 0; i < Q.length; i++) {
      	if (Q[i] == msg.sender) {
-       	return uint8(i);
+       	return i;
        }
      }
      return 5;
@@ -99,7 +99,6 @@ pragma solidity ^0.4.15;
 
  	/* Places `addr` in the first empty position in the queue */
  	function enqueue(address addr) public {
- 		// YOUR CODE HERE
     if (size < Q.length) {
       Q[size] = addr;
       size++;

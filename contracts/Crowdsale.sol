@@ -71,7 +71,6 @@ import './utils/SafeMath.sol';
    }
 
    function buy()
-   saleActive()
    payable public returns(bool) {
      if (queue.getFirst() == msg.sender) {
        queue.dequeue();
@@ -83,6 +82,7 @@ import './utils/SafeMath.sol';
        token.approve(msg.sender, tokenCount);
        token.transferFrom(address(this), msg.sender, tokenCount);
        tokenSold += tokenCount;
+			 return true;
      }
      return false;
    }
