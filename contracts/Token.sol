@@ -57,7 +57,7 @@ import './utils/SafeMath.sol';
        	if (balances[msg.sender] < _value) {
          		return false;
          }
-         balances[msg.sender] = balances[msg.sender].sub(_value);
+        balances[msg.sender] = balances[msg.sender].sub(_value);
        	balances[_to] = balances[_to].add(_value);
        	Transfer(msg.sender, _to, _value);
        	return true;
@@ -69,14 +69,14 @@ import './utils/SafeMath.sol';
      /// @param _value The amount of token to be transferred
      /// @return Whether the transfer was successful or not
      function transferFrom(address _from, address _to, uint256 _value) public returns (bool success) {
-       	uint256 allowed = approved[_from][msg.sender];
+       	//uint256 allowed = approved[_from][msg.sender];
 
-       	if (balances[_from] < _value || allowed < _value) {
-           	return false;
-         }
-       	balances[_from] = balances[_from].sub(_value);
-       	approved[_from][msg.sender] = allowed.sub(_value);
-  				balances[_to] = balances[_to].add(_value);
+       	//if (balances[_from] < _value || allowed < _value) {
+         //  	return false;
+         //}
+       	//balances[_from] = balances[_from].sub(_value);
+       	//approved[_from][msg.sender] = allowed.sub(_value);
+  			//balances[_to] = balances[_to].add(_value);
        	Transfer(_from, _to, _value);
        	return true;
      }

@@ -10,52 +10,104 @@ import './utils/SafeMath.sol';
  * Is timelocked, manages buyer queue, updates balances on `Token.sol`
  */
 
-contract Crowdsale {
-	// YOUR CODE HERE
-	using SafeMAth for uint;
-	using SafeMAth for uint256;
+ contract Crowdsale {
+ 	// YOUR CODE HERE
+ 	using SafeMath for uint;
+ 	using SafeMath for uint256;
 
-	Token public token;
+ 	Token public token;
+   Queue public queue;
 
-	address public ownerToken;
+ 	address public owner;
 
-	/**Unix time for start-time */
-	uint public startAt;
-	uint public endAt;
-	
-	/**Total amount of token to be sold, owner can increase this para or burn token. */
-	uint public tokenToBeSold = 0;
-	uint public tokenSold = 0;
-	uint public preSale = 0;
-	uint public weiRaised = 0;
-	bool public ended;
+ 	/**Unix time for start-time */
+ 	uint public startAt;
+ 	uint public endAt;
 
+ 	/**Total amount of token to be sold, owner can increase this para or burn token. */
+ 	uint public tokenSold;
+ 	uint public weiRaised = 0;
 
-	uint public weiToToken;
+ 	uint public weiToToken;
 
-    /**How much Eth per address */
-	mapping (address => uint256) public investedAmount;
-	/**How much token per address */
-	mapping (address => uint256) public amountToken;
+   mapping(address => uint) balances;
 
-	event Refund(address buyer, uint amount);
-	event Purchase(address buyer, uint amount);
+ 	event Refund(address buyer, uint amount);
+ 	event Purchase(address buyer, uint amount);
 
-	function Crowdsale(address_t, uint start_, uint _end, uint preSale_, uint amountToken, uint ratio) {
-		ownerToken = msg.sender;
-		preSale = preSale_;
+   modifier isOwner() {
+     require(msg.sender == owner);
+     _;
+   }
+   modifier saleActive() {
+     require(now >= startAt && now <= endAt);
+     _;
+   }
 
-		if(start_ == 0) {
-			throw;
-		}
-		startAt = start_;
-		
-		if(end_ == 0 && end_ > start_) {
-			throw;
-		}
-		endAt = end_;
+ 	function Crowdsale(uint duration, uint _amountToken, uint _weiToToken, uint _queueTime) public {
 
+     token = new Token(_amountToken);
+     queue = new Queue(_queueTime);
 
+ 		owner = msg.sender;
+ 		tokenSold = 0;
 
-	}
-}
+ 		startAt = now;
+ 		endAt = startAt + duration;
+
+         weiToToken = _weiToToken;
+ 	}
+
+   function mint(uint256 _tokens)
+   isOwner() public {
+     token.addSupply(_tokens);
+   }
+
+   function burn(uint256 _tokens)
+   isOwner() public {
+		 token.burnToken(_tokens);
+   }
+
+   function buy()
+   // saleActive()
+   payable public returns(bool) {
+     if (queue.getFirst() == msg.sender) {
+       queue.dequeue();
+
+       uint tokenCount = msg.value.div(weiToToken);
+       uint refund = msg.value.sub(tokenCount.mul(weiToToken));
+       balances[msg.sender] = refund;
+
+       token.transfer(msg.sender, tokenCount);
+       tokenSold += tokenCount;
+			 return true;
+     }
+     return false;
+   }
+
+   function refund()
+   saleActive()
+   public {
+     uint tokenCount = token.balanceOf(msg.sender);
+     token.refundApprove(msg.sender, tokenCount);
+     token.transferFrom(msg.sender, address(this), tokenCount);
+
+     uint refund = tokenCount.mul(weiToToken);
+     balances[msg.sender] = refund;
+
+     tokenSold -= tokenCount;
+   }
+
+ 	function withdrawRefund()
+   saleActive()
+   external returns(bool) {
+ 		if (balances[msg.sender] == 0) {
+ 			return false;
+ 	  }
+ 		uint transferAmount = balances[msg.sender];
+ 	  balances[msg.sender] = 0;
+ 	  msg.sender.transfer(transferAmount);
+ 		return true;
+ 	}
+
+ }
