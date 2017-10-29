@@ -29,14 +29,43 @@ contract('Crowdsale Test', function(accounts) {
 	 * Make sure to provide descriptive strings for method arguements and
 	 * assert statements
 	 */
-	describe('Testing Initial Supply', function() {
-		it("Total Supply is correct", async function() {
-			return token.totalSupply.call().then(totalSupply => {
-				assert.equal(totalSupply, 100);
+	describe('Testing Supply Control', function() {
+		it("Initial Supply is Correct", async function() {
+			return token.totalSupply.call().then(totalSupply1 => {
+				assert.equal(totalSupply1, 100);
 			});
 		});
+		it("Can Mint Tokens", async function() {
+			return crowdsale.mint(100, {from: accounts[0]}).then(_ => {
+				return token.totalSupply.call().then(totalSupply2 => {
+					assert.equal(totalSupply2, 200);
+				});
+			});
+		});
+		it("Can Burn Tokens", async function() {
+			return crowdsale.burn(90, {from: accounts[0]}).then(_ => {
+				return token.totalSupply.call().then(totalSupply3 => {
+					assert.equal(totalSupply3, 10);
+				});
+			});
+		});
+		// it("Test Balance", async function() {
+		// 	return token.balanceOf(crowdsale.address).then(crowdsaleBalance => {
+		// 		return token.balanceOf(accounts[0]).then(account0Balance => {
+		// 			console.log(crowdsaleBalance);
+		// 			console.log(account0Balance);
+		// 		});
+		// 	});
+		// });
 	});
 	describe('Testing Queue', function() {
+		it("First Address in Queue is Correct", async function() {
+			return queue.enqueue(accounts[1]).then(_ => {
+				return queue.getFirst().then(firstAddr => {
+					assert.equal(firstAddr, accounts[1]);
+				});
+			});
+		});
 		it("Queue only adds 5 addresses", async function() {
 			return queue.enqueue(accounts[1]).then(_ => {
 				return queue.enqueue(accounts[2]).then(_ => {
@@ -77,11 +106,26 @@ contract('Crowdsale Test', function(accounts) {
 	});
 
 	describe('Testing Buy', function() {
-		it("Total Supply is correct", async function() {
-			return crowdsale.buy({from: accounts[1], value: 10}).then(success => {
-				console.log(success)
-				return token.balanceOf(accounts[1]).then(firstBalance => {
-					assert.equal(Number(firstBalance), 10);
+		it("Can buy", async function() {
+			return queue.enqueue(accounts[1]).then(_ => {
+				return crowdsale.buy({from: accounts[1], value: 10}).then(success => {
+					return token.balanceOf(accounts[1]).then(firstBalance => {
+						assert.equal(Number(firstBalance), 10);
+					});
+				});
+			});
+		});
+		it("Can refund", async function() {
+			return queue.enqueue(accounts[1]).then(_ => {
+				return crowdsale.buy({from: accounts[1], value: 10}).then(success => {
+					return token.balanceOf(accounts[1]).then(firstBalance => {
+						assert.equal(Number(firstBalance), 10);
+						return crowdsale.refund({from: accounts[1]}).then(success => {
+							return token.balanceOf(accounts[1]).then(firstBalance => {
+								assert.equal(Number(firstBalance), 0);
+							});
+						});
+					});
 				});
 			});
 		});

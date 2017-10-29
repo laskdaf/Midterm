@@ -15,7 +15,7 @@ pragma solidity ^0.4.15;
    uint startTime;
    uint timelimit;
 
- 	 uint8 size;
+ 	 uint8 public size;
 
    address[] Q;
 

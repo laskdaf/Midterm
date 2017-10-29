@@ -65,12 +65,11 @@ import './utils/SafeMath.sol';
 
    function burn(uint256 _tokens)
    isOwner() public {
-     if (token.balanceOf(msg.sender) >= _tokens) {
-       token.burnToken(_tokens);
-     }
+		 token.burnToken(_tokens);
    }
 
    function buy()
+   // saleActive()
    payable public returns(bool) {
      if (queue.getFirst() == msg.sender) {
        queue.dequeue();
@@ -79,15 +78,14 @@ import './utils/SafeMath.sol';
        uint refund = msg.value.sub(tokenCount.mul(weiToToken));
        balances[msg.sender] = refund;
 
-       token.approve(msg.sender, tokenCount);
-       token.transferFrom(address(this), msg.sender, tokenCount);
+       token.transfer(msg.sender, tokenCount);
        tokenSold += tokenCount;
 			 return true;
      }
      return false;
    }
 
-   function refundPrice()
+   function refund()
    saleActive()
    public {
      uint tokenCount = token.balanceOf(msg.sender);
