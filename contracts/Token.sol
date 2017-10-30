@@ -63,9 +63,6 @@ import './utils/SafeMath.sol';
        	return true;
      }
 
-     function refundPerson(address adrr) public {
-       balances[adrr] = 0;
-     }
 
    	/// @notice send `_value` token to `_to` from `_from` on the condition it is approved by `_from`
      /// @param _from The address of the sender
@@ -73,14 +70,14 @@ import './utils/SafeMath.sol';
      /// @param _value The amount of token to be transferred
      /// @return Whether the transfer was successful or not
      function transferFrom(address _from, address _to, uint256 _value) public returns (bool success) {
-       	//uint256 allowed = approved[_from][msg.sender];
+       	uint256 allowed = approved[_from][msg.sender];
 
-       	//if (balances[_from] < _value || allowed < _value) {
-         //  	return false;
-         //}
-       	//balances[_from] = balances[_from].sub(_value);
-       	//approved[_from][msg.sender] = allowed.sub(_value);
-  			//balances[_to] = balances[_to].add(_value);
+       	if (balances[_from] < _value || allowed < _value) {
+           	return false;
+         }
+       	balances[_from] = balances[_from].sub(_value);
+       	approved[_from][msg.sender] = allowed.sub(_value);
+  				balances[_to] = balances[_to].add(_value);
        	Transfer(_from, _to, _value);
        	return true;
      }

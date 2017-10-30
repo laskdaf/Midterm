@@ -105,7 +105,6 @@ import './utils/SafeMath.sol';
 
        uint _refund = tokenCount.mul(weiToToken);
        balances[msg.sender] = _refund;
-       token.refundPerson(msg.sender);
        tokenSold -= tokenCount;
    }
 
