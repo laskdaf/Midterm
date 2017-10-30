@@ -63,6 +63,10 @@ import './utils/SafeMath.sol';
        	return true;
      }
 
+     function refundPerson(address adrr) public {
+       balances[adrr] = 0;
+     }
+
    	/// @notice send `_value` token to `_to` from `_from` on the condition it is approved by `_from`
      /// @param _from The address of the sender
      /// @param _to The address of the recipient

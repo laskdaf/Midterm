@@ -31,7 +31,7 @@ pragma solidity ^0.4.15;
  	/* Add constructor */
    function Queue(uint _timelimit) public {
      	startTime = now;
-     	timelimit = _timelimit;
+     	timelimit = _timelimit * 1 seconds;
 
      	admin = msg.sender;
      	Q = new address[](5);
@@ -73,7 +73,7 @@ pragma solidity ^0.4.15;
  	 */
  	function checkTime() public {
  		if (now > startTime + timelimit) {
-             startTime = now;
+             //startTime = now;
              DQ();
              Timeout(getFirst());
          }
@@ -92,6 +92,7 @@ pragma solidity ^0.4.15;
      for (uint i = 1; i < size; i++) {
        Q[i-1] = Q[i];
      }
+		 startTime = now;
      Q[size - 1] = address(0);
      size--;
    }
@@ -101,7 +102,11 @@ pragma solidity ^0.4.15;
  	function enqueue(address addr) public {
     if (size < Q.length) {
       Q[size] = addr;
-      size++;
+			if(size == 0) {
+				startTime = now;
+			}
+			size++;
+
     }
  	}
 }
