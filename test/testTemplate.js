@@ -66,6 +66,39 @@ contract('Crowdsale Test', function(accounts) {
 				});
 			});
 		});
+		it("Queue size works properly", async function() {
+			return queue.enqueue(accounts[1]).then(_ => {
+				return queue.enqueue(accounts[2]).then(_ => {
+					return queue.enqueue(accounts[3]).then(_ => {
+						return queue.enqueue(accounts[5]).then(_ => {
+							return queue.enqueue(accounts[4]).then(_ => {
+								return queue.qsize().then(size => {
+									assert.equal(size, 5);
+								});
+							});
+						});
+					});
+				});
+			});
+
+		});
+		// it("Dequeue works properly", async function() {
+		// 	return queue.enqueue(accounts[1]).then(_ => {
+		// 		return queue.enqueue(accounts[2]).then(_ => {
+		// 			return queue.enqueue(accounts[3]).then(_ => {
+		// 				return queue.dequeue({from: accounts[0]}).then(_ => {
+		// 					return queue.enqueue(accounts[4]).then(_ => {
+		// 						return queue.getFirst().then(first => {
+		// 							console.log(first);
+		// 							console.log(accounts[2])
+		// 						});
+		// 					});
+		// 				});
+		// 			});
+		// 		});
+		// 	});
+
+		// });
 		it("Queue only adds 5 addresses", async function() {
 			return queue.enqueue(accounts[1]).then(_ => {
 				return queue.enqueue(accounts[2]).then(_ => {
