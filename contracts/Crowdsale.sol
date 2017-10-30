@@ -69,7 +69,7 @@ import './utils/SafeMath.sol';
    }
 
    function buy()
-   // saleActive()
+   saleActive()
    payable public returns(bool) {
      if (queue.getFirst() == msg.sender) {
        queue.dequeue();
